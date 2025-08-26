@@ -1,43 +1,47 @@
-import pytest
+import allure
 from pages.main_page import MainPage
 
 
-def test_click_constructor_link(driver):
-    page = MainPage(driver)
-    page.open()
-    page.click_order_feed_link()  # Уйти в ленту
-    page.click_constructor_link()  # Вернуться в конструктор
-    assert "constructor" in driver.current_url
+@allure.suite("UI: Главная страница")
+class TestMainPage:
 
+    @allure.title("Переход в Конструктор из Ленты заказов")
+    def test_click_constructor_link(self, driver):
+        page = MainPage(driver)
+        page.open()
+        page.click_order_feed_link()
+        page.click_constructor_link()
+        assert "constructor" in driver.current_url
 
-def test_click_order_feed_link(driver):
-    page = MainPage(driver)
-    page.open()
-    page.click_order_feed_link()
-    assert "feed" in driver.current_url
+    @allure.title("Переход в Ленту заказов")
+    def test_click_order_feed_link(self, driver):
+        page = MainPage(driver)
+        page.open()
+        page.click_order_feed_link()
+        assert "feed" in driver.current_url
 
+    @allure.title("Открытие модального окна ингредиента")
+    def test_click_ingredient_opens_modal(self, driver):
+        page = MainPage(driver)
+        page.open()
+        page.click_first_ingredient()
+        assert page.is_visible(page.MODAL_TITLE)
 
-def test_click_ingredient_opens_modal(driver):
-    page = MainPage(driver)
-    page.open()
-    page.click_first_ingredient()
-    assert page.is_modal_visible()
+    @allure.title("Закрытие модального окна по крестику")
+    def test_close_modal_with_cross(self, driver):
+        page = MainPage(driver)
+        page.open()
+        page.click_first_ingredient()
+        assert page.is_visible(page.MODAL_TITLE)
+        page.close_modal()
+        page.wait_for_invisibility(page.MODAL_TITLE)
 
-
-def test_close_modal_with_cross(driver):
-    page = MainPage(driver)
-    page.open()
-    page.click_first_ingredient()
-    assert page.is_modal_visible()
-    page.close_modal()
-    assert not page.is_modal_visible()
-
-
-def test_counter_increases_when_adding_ingredient(driver):
-    page = MainPage(driver)
-    page.open()
-    initial_counter = page.get_bun_counter()
-    page.click_first_ingredient()  # Добавляем булочку
-    page.place_order()  # Оформляем заказ
-    new_counter = page.get_bun_counter()
-    assert new_counter == initial_counter + 1
+    @allure.title("Счётчик увеличивается при добавлении ингредиента")
+    def test_counter_increases_when_adding_ingredient(self, driver):
+        page = MainPage(driver)
+        page.open()
+        initial_counter = page.get_bun_counter()
+        page.click_first_ingredient()
+        page.place_order()
+        new_counter = page.get_bun_counter()
+        assert new_counter == initial_counter + 1
