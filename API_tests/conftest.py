@@ -1,29 +1,12 @@
-# conftest.py
 import pytest
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service as ChromeService
-from selenium.webdriver.firefox.service import Service as FirefoxService
-from webdriver_manager.chrome import ChromeDriverManager
-from webdriver_manager.firefox import GeckoDriverManager
+from tests.helpers import generate_user_data, register_user, delete_user
 
 
-@pytest.fixture(params=["chrome", "firefox"])
-def driver(request):
-    """
-    Фикстура: создаёт экземпляр браузера (Chrome или Firefox).
-    Поддерживает headless-режим для CI.
-    """
-    if request.param == "chrome":
-        options = webdriver.ChromeOptions()
-        options.add_argument("--headless")  # Убери, если хочешь видеть окно
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
-        driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
+@pytest.fixture
+def new_user():
+    """Фикстура: создаёт пользователя и удаляет после теста"""
+    payload = generate_user_data()
+    token = register_user(payload)
+    yield payload, token
+    delete_user(token)
 
-    elif request.param == "firefox":
-        options = webdriver.FirefoxOptions()
-        options.add_argument("--headless")
-        driver = webdriver.Firefox(service=FirefoxService(GeckoDriverManager().install()), options=options)
-
-    yield driver
-    driver.quit()
