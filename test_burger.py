@@ -1,8 +1,8 @@
 import pytest
 import allure
-from src.burger import Burger
-from src.bun import Bun
-from src.ingredient_types import Ingredient
+from bun import Bun
+from burger import Burger
+from ingredient_types import Ingredient
 
 
 @allure.suite("Unit: Burger")
@@ -25,14 +25,25 @@ class TestBurger:
         burger.remove_ingredient(0)
         assert len(burger.ingredients) == 1
 
+    @allure.title("Проверка перемещения ингредиента")
+    def test_move_ingredient(self, burger):
+        # sauce = 0, filling = 1
+        burger.move_ingredient(1, 0)
+        assert burger.ingredients[0].name == "Мясо бессмертных моллюсков Protostomia"
+        assert burger.ingredients[1].name == "Соус фирменный Space Sauce"
+
     @allure.title("Проверка пересчёта цены бургера")
     def test_price_calculation(self, burger):
         total_price = burger.get_price()
         assert total_price == 1255 * 2 + 80 + 1337
 
     @allure.title("Проверка генерации чека")
-    def test_receipt_contains_bun_and_ingredient(self, burger):
-        receipt = burger.get_receipt()
-        assert "Краторная булка" in receipt
-        assert "Соус фирменный Space Sauce" in receipt
-
+    def test_receipt_full_match(self, burger):
+        expected_receipt = (
+            f"(==== {burger.bun.name} ====)\n"
+            f"= {burger.ingredients[0].type} {burger.ingredients[0].name} =\n"
+            f"= {burger.ingredients[1].type} {burger.ingredients[1].name} =\n"
+            f"(==== {burger.bun.name} ====)\n\n"
+            f"Price: {burger.get_price()}\n"
+        )
+        assert burger.get_receipt() == expected_receipt
