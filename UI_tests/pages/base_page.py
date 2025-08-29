@@ -8,7 +8,7 @@ class BasePage:
         self.driver = driver
         self.url = "https://stellarburgers.nomoreparties.site"
 
-    @allure.step("Открываем страницу")
+    @allure.step("Открываем страницу {self.url}")
     def open(self):
         self.driver.get(self.url)
 
@@ -38,3 +38,7 @@ class BasePage:
         return WebDriverWait(self.driver, timeout).until(
             EC.invisibility_of_element_located(locator)
         )
+
+    @allure.step("Получаем текущий URL страницы")
+    def get_current_url(self):
+        return self.driver.current_url
