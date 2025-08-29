@@ -1,47 +1,36 @@
 import allure
-from pages.main_page import MainPage
+from selenium.webdriver.common.by import By
+from pages.base_page import BasePage
 
 
-@allure.suite("UI: Главная страница")
-class TestMainPage:
+class OrderFeedPage(BasePage):
+    # Локаторы
+    CONSTRUCTOR_LINK = (By.LINK_TEXT, "Конструктор")
+    ORDER_CARD = (By.CSS_SELECTOR, ".OrderHistory_card__2J5QI")
+    ORDER_NUMBER = (By.CSS_SELECTOR, ".text.text_type_digits-default")
+    MODAL_TITLE = (By.CSS_SELECTOR, ".Modal_modal__title__2s4mU")
+    CLOSE_MODAL_BUTTON = (By.CSS_SELECTOR, ".Modal_modal__close__2zc1h")
 
-    @allure.title("Переход в Конструктор из Ленты заказов")
-    def test_click_constructor_link(self, driver):
-        page = MainPage(driver)
-        page.open()
-        page.click_order_feed_link()
-        page.click_constructor_link()
-        assert "constructor" in page.get_current_url()
+    @allure.step("Переходим в Конструктор")
+    def click_constructor_link(self):
+        self.click_element(self.CONSTRUCTOR_LINK)
 
-    @allure.title("Переход в Ленту заказов")
-    def test_click_order_feed_link(self, driver):
-        page = MainPage(driver)
-        page.open()
-        page.click_order_feed_link()
-        assert "feed" in page.get_current_url()
+    @allure.step("Кликаем по первому заказу в ленте")
+    def click_first_order(self):
+        self.click_element(self.ORDER_CARD)
 
-    @allure.title("Открытие модального окна ингредиента")
-    def test_click_ingredient_opens_modal(self, driver):
-        page = MainPage(driver)
-        page.open()
-        page.click_first_ingredient()
-        assert page.is_modal_visible()
+    @allure.step("Проверяем, открыто ли модальное окно заказа")
+    def is_order_modal_visible(self):
+        return self.is_visible(self.MODAL_TITLE)
 
-    @allure.title("Закрытие модального окна по крестику")
-    def test_close_modal_with_cross(self, driver):
-        page = MainPage(driver)
-        page.open()
-        page.click_first_ingredient()
-        assert page.is_modal_visible()
-        page.close_modal()
-        page.wait_for_modal_close()
+    @allure.step("Закрываем модальное окно заказа")
+    def close_modal(self):
+        self.click_element(self.CLOSE_MODAL_BUTTON)
 
-    @allure.title("Счётчик увеличивается при добавлении ингредиента")
-    def test_counter_increases_when_adding_ingredient(self, driver):
-        page = MainPage(driver)
-        page.open()
-        initial_counter = page.get_bun_counter()
-        page.click_first_ingredient()
-        page.place_order()
-        new_counter = page.get_bun_counter()
-        assert new_counter == initial_counter + 1
+    @allure.step("Ожидаем закрытия модального окна заказа")
+    def wait_for_modal_close(self):
+        return self.wait_for_invisibility(self.MODAL_TITLE)
+
+    @allure.step("Получаем номер первого заказа из ленты")
+    def get_first_order_number(self):
+        return self.get_text(self.ORDER_NUMBER)
